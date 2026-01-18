@@ -36,13 +36,16 @@ export default function TaskFlow() {
   const [selectedTodos, setSelectedTodos] = useState(new Set<string>());
   const [showConfetti, setShowConfetti] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
-  const [quote] = useState(
-    () =>
+  const [quote, setQuote] = useState(MOTIVATIONAL_QUOTES[0]);
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+
+  useEffect(() => {
+    setQuote(
       MOTIVATIONAL_QUOTES[
         Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)
       ]
-  );
-  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+    );
+  }, []);
 
   const searchRef = useRef<HTMLInputElement>(null);
 
