@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { Todo, Subtask } from "@/lib/types";
+import { Todo } from "@/lib/types";
 
 export function useSupabaseTodos() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -14,6 +14,14 @@ export function useSupabaseTodos() {
     try {
       setLoading(true);
       setError(null);
+
+      if (!supabase) {
+        setError(
+          "Supabase not configured. Please add environment variables to .env.local"
+        );
+        setLoading(false);
+        return;
+      }
 
       const { data: todosData, error: todosError } = await supabase
         .from("todos")
@@ -70,6 +78,11 @@ export function useSupabaseTodos() {
       try {
         setError(null);
 
+        if (!supabase) {
+          setError("Supabase not configured");
+          return;
+        }
+
         const { data: newTodo, error: todoError } = await supabase
           .from("todos")
           .insert({
@@ -116,6 +129,8 @@ export function useSupabaseTodos() {
       try {
         setError(null);
 
+        if (!supabase) return;
+
         const todo = todos.find((t) => t.id === id);
         if (!todo) return;
 
@@ -141,7 +156,8 @@ export function useSupabaseTodos() {
       try {
         setError(null);
 
-        // Subtasks will be deleted automatically due to CASCADE
+        if (!supabase) return;
+
         const { error: deleteError } = await supabase
           .from("todos")
           .delete()
@@ -164,6 +180,8 @@ export function useSupabaseTodos() {
       try {
         setError(null);
 
+        if (!supabase) return;
+
         const { error: updateError } = await supabase
           .from("todos")
           .update({
@@ -179,10 +197,8 @@ export function useSupabaseTodos() {
 
         // Handle subtasks update
         if (updates.subtasks) {
-          // Delete existing subtasks
           await supabase.from("subtasks").delete().eq("todo_id", id);
 
-          // Insert new subtasks
           if (updates.subtasks.length > 0) {
             const subtasksToInsert = updates.subtasks.map((st, index) => ({
               todo_id: id,
@@ -214,6 +230,8 @@ export function useSupabaseTodos() {
       try {
         setError(null);
 
+        if (!supabase) return;
+
         const todo = todos.find((t) => t.id === todoId);
         if (!todo) return;
 
@@ -242,6 +260,8 @@ export function useSupabaseTodos() {
       try {
         setError(null);
 
+        if (!supabase) return;
+
         const { error: updateError } = await supabase
           .from("todos")
           .update({ completed: true })
@@ -264,6 +284,8 @@ export function useSupabaseTodos() {
       try {
         setError(null);
 
+        if (!supabase) return;
+
         const { error: deleteError } = await supabase
           .from("todos")
           .delete()
@@ -283,6 +305,10 @@ export function useSupabaseTodos() {
   // Initial fetch and real-time subscription
   useEffect(() => {
     fetchTodos();
+
+    if (!supabase) {
+      return;
+    }
 
     // Subscribe to real-time changes
     const todosChannel = supabase
@@ -304,7 +330,9 @@ export function useSupabaseTodos() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(todosChannel);
+      if (supabase) {
+        supabase.removeChannel(todosChannel);
+      }
     };
   }, [fetchTodos]);
 
