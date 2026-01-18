@@ -3,8 +3,7 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { Todo, FilterStatus, SortBy } from "@/lib/types";
 import { MOTIVATIONAL_QUOTES } from "@/lib/constants";
-import { useTodos } from "@/hooks/useTodos";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useSupabaseTodos } from "@/hooks/useSupabaseTodos";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Confetti } from "./Confetti";
 import { ShortcutsModal } from "./ShortcutsModal";
@@ -16,6 +15,8 @@ import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 export default function TaskFlow() {
   const {
     todos,
+    loading,
+    error,
     addTodo,
     toggleTodo,
     deleteTodo,
@@ -23,10 +24,23 @@ export default function TaskFlow() {
     toggleSubtask,
     bulkComplete,
     bulkDelete,
-  } = useTodos();
+  } = useSupabaseTodos();
 
-  const [darkMode, setDarkMode] = useLocalStorage("taskflow_darkmode", false);
-  const [streak, setStreak] = useLocalStorage("taskflow_streak", 3);
+  const [darkMode, setDarkMode] = useState(false);
+  const [streak, setStreak] = useState(3);
+
+  // Load dark mode from localStorage on mount (client-side only)
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem("taskflow_darkmode");
+    if (savedDarkMode) {
+      setDarkMode(JSON.parse(savedDarkMode));
+    }
+  }, []);
+
+  // Save dark mode to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("taskflow_darkmode", JSON.stringify(darkMode));
+  }, [darkMode]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [filterPriority, setFilterPriority] = useState("all");
@@ -521,8 +535,26 @@ export default function TaskFlow() {
               <span className="text-xl">+</span> Add New Task (N)
             </button>
 
+            {error && (
+              <div className="mb-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded-xl">
+                <p className="font-medium">⚠️ Error: {error}</p>
+              </div>
+            )}
+
             <div className="space-y-3">
-              {filteredTodos.length === 0 ? (
+              {loading ? (
+                <div
+                  className={`${
+                    darkMode ? "bg-gray-800/50" : "bg-white/50"
+                  } backdrop-blur-sm rounded-2xl p-12 text-center`}
+                >
+                  <div className="text-6xl mb-4 animate-pulse">⏳</div>
+                  <h3 className="text-xl font-medium mb-2">Loading tasks...</h3>
+                  <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
+                    Fetching your tasks from the cloud
+                  </p>
+                </div>
+              ) : filteredTodos.length === 0 ? (
                 <div
                   className={`${
                     darkMode ? "bg-gray-800/50" : "bg-white/50"
