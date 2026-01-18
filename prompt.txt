@@ -1,0 +1,20 @@
+I have a ToDo.jsx in this folder.
+I want you to refactor this file into a either a proper complete professional React application or a NextJS application - i cannot decide which one is better.
+Maybe you can help me make a determination on this.
+For the first refactoring pass, I want you to keep everything as local storage.
+Then in the next pass,  I will have you refactor it for supabase database tables and help me with the migration.
+I will be hosting this on Vercel, but I want you to use gh GitHub CLI to create my remote repo and deploy it - and then I will connect it with Vercel and then after that every time you push the code to GitHub, vercel will deploy it automatically.
+But before you push any code to GitHub, make sure you create a build that works on my machine. 
+
+So create a document for me with your suggestions and then I will tell you what i prefer to do.
+
+Ok let's go with Nextjs and yes, proceed with the refactoring.
+I will be hosting this on Vercel, but I want you to use gh GitHub CLI to create my remote repo and deploy it - always name the repo the same name as the root folder of the project - and then I will connect it with Vercel and then after that every time you push the code to GitHub, vercel will deploy it automatically.
+But before you push any code to GitHub, make sure you create a build that works on my machine. 
+
+
+Also, i have included my requests to you so far in a file called prompt.txt
+I want you to rewrite that in a professional proper complete way so that I can repeat this exact same prompt to you for future projects
+Also, from now on, nextjs will be the way to go instead of react, so also make sure you take that into account.
+
+
