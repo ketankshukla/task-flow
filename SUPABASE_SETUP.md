@@ -219,7 +219,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 1. Go to your Vercel project dashboard
 2. Settings → Environment Variables
 3. Add these variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` (if using server-side operations)
 

@@ -36,6 +36,8 @@ export function TodoForm({
   );
   const [newSubtask, setNewSubtask] = useState("");
   const [titleError, setTitleError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
+  const [dueDateError, setDueDateError] = useState("");
 
   const titleRef = useRef<HTMLInputElement>(null);
   const subtaskRef = useRef<HTMLInputElement>(null);
@@ -43,12 +45,38 @@ export function TodoForm({
   const priorityKeys = Object.keys(PRIORITIES) as Priority[];
 
   const handleSubmit = () => {
+    let hasError = false;
+
+    // Validate title
     if (!title.trim()) {
       setTitleError("Task title is required");
-      titleRef.current?.focus();
+      hasError = true;
+    } else {
+      setTitleError("");
+    }
+
+    // Validate description
+    if (!description.trim()) {
+      setDescriptionError("Description is required");
+      hasError = true;
+    } else {
+      setDescriptionError("");
+    }
+
+    // Validate due date
+    if (!dueDate) {
+      setDueDateError("Due date is required");
+      hasError = true;
+    } else {
+      setDueDateError("");
+    }
+
+    if (hasError) {
+      if (!title.trim()) {
+        titleRef.current?.focus();
+      }
       return;
     }
-    setTitleError("");
 
     const todoData = {
       title: title.trim(),
@@ -214,20 +242,34 @@ export function TodoForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Description</label>
+        <label className="block text-sm font-medium mb-1">Description *</label>
         <textarea
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            if (descriptionError) setDescriptionError("");
+          }}
           placeholder="Add some details..."
           rows={2}
-          className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-purple-500 transition-colors resize-none
+          className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors resize-none
+            ${
+              descriptionError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-purple-500 " +
+                  (darkMode ? "border-gray-600" : "border-gray-200")
+            }
             ${
               darkMode
-                ? "bg-gray-700 border-gray-600 placeholder-gray-400"
-                : "bg-white border-gray-200 placeholder-gray-400"
+                ? "bg-gray-700 placeholder-gray-400"
+                : "bg-white placeholder-gray-400"
             }
           `}
         />
+        {descriptionError && (
+          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <span>⚠️</span> {descriptionError}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -294,7 +336,7 @@ export function TodoForm({
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          Due Date
+          Due Date *
           {dueDate && (
             <span
               className={`ml-2 text-xs ${
@@ -308,15 +350,25 @@ export function TodoForm({
         <input
           type="date"
           value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-purple-500
+          onChange={(e) => {
+            setDueDate(e.target.value);
+            if (dueDateError) setDueDateError("");
+          }}
+          className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors
             ${
-              darkMode
-                ? "bg-gray-700 border-gray-600"
-                : "bg-white border-gray-200"
+              dueDateError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-purple-500 " +
+                  (darkMode ? "border-gray-600" : "border-gray-200")
             }
+            ${darkMode ? "bg-gray-700" : "bg-white"}
           `}
         />
+        {dueDateError && (
+          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <span>⚠️</span> {dueDateError}
+          </p>
+        )}
       </div>
 
       <div>
@@ -400,10 +452,10 @@ export function TodoForm({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!title.trim()}
+          disabled={!title.trim() || !description.trim() || !dueDate}
           className={`flex-1 px-4 py-3 rounded-xl font-medium transition-opacity
             ${
-              !title.trim()
+              !title.trim() || !description.trim() || !dueDate
                 ? "bg-gray-400 cursor-not-allowed opacity-50"
                 : "bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
             }
