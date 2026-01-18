@@ -11,6 +11,7 @@ import { StatsPanel } from "./StatsPanel";
 import { TodoItem } from "./TodoItem";
 import { TodoForm } from "./TodoForm";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
+import { IncompleteSubtasksModal } from "./IncompleteSubtasksModal";
 
 export default function TaskFlow() {
   const {
@@ -19,6 +20,7 @@ export default function TaskFlow() {
     error,
     addTodo,
     toggleTodo,
+    toggleTodoWithSubtasks,
     deleteTodo,
     editTodo,
     toggleSubtask,
@@ -58,6 +60,19 @@ export default function TaskFlow() {
     todoId: string;
     todoTitle: string;
   }>({ isOpen: false, todoId: "", todoTitle: "" });
+  const [incompleteSubtasksWarning, setIncompleteSubtasksWarning] = useState<{
+    isOpen: boolean;
+    todoId: string;
+    todoTitle: string;
+    incompleteCount: number;
+    totalCount: number;
+  }>({
+    isOpen: false,
+    todoId: "",
+    todoTitle: "",
+    incompleteCount: 0,
+    totalCount: 0,
+  });
 
   useEffect(() => {
     setQuote(
@@ -90,7 +105,26 @@ export default function TaskFlow() {
   const handleToggleTodo = useCallback(
     (id: string) => {
       const todo = todos.find((t) => t.id === id);
-      if (todo && !todo.completed) {
+      if (!todo) return;
+
+      // If trying to complete a task with incomplete subtasks, show warning
+      if (!todo.completed && todo.subtasks.length > 0) {
+        const incompleteSubtasks = todo.subtasks.filter((st) => !st.completed);
+
+        if (incompleteSubtasks.length > 0) {
+          setIncompleteSubtasksWarning({
+            isOpen: true,
+            todoId: id,
+            todoTitle: todo.title,
+            incompleteCount: incompleteSubtasks.length,
+            totalCount: todo.subtasks.length,
+          });
+          return;
+        }
+      }
+
+      // No incomplete subtasks or uncompleting task
+      if (!todo.completed) {
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 100);
       }
@@ -98,6 +132,31 @@ export default function TaskFlow() {
     },
     [todos, toggleTodo]
   );
+
+  const handleConfirmCompleteWithSubtasks = useCallback(() => {
+    const { todoId } = incompleteSubtasksWarning;
+    setIncompleteSubtasksWarning({
+      isOpen: false,
+      todoId: "",
+      todoTitle: "",
+      incompleteCount: 0,
+      totalCount: 0,
+    });
+
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 100);
+    toggleTodoWithSubtasks(todoId);
+  }, [incompleteSubtasksWarning, toggleTodoWithSubtasks]);
+
+  const handleCancelCompleteWithSubtasks = useCallback(() => {
+    setIncompleteSubtasksWarning({
+      isOpen: false,
+      todoId: "",
+      todoTitle: "",
+      incompleteCount: 0,
+      totalCount: 0,
+    });
+  }, []);
 
   const handleDeleteTodo = useCallback(
     (id: string) => {
@@ -621,6 +680,16 @@ export default function TaskFlow() {
           </p>
         </footer>
       </div>
+
+      <IncompleteSubtasksModal
+        isOpen={incompleteSubtasksWarning.isOpen}
+        todoTitle={incompleteSubtasksWarning.todoTitle}
+        incompleteCount={incompleteSubtasksWarning.incompleteCount}
+        totalCount={incompleteSubtasksWarning.totalCount}
+        onConfirm={handleConfirmCompleteWithSubtasks}
+        onCancel={handleCancelCompleteWithSubtasks}
+        darkMode={darkMode}
+      />
     </div>
   );
 }

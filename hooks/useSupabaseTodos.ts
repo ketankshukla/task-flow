@@ -150,6 +150,44 @@ export function useSupabaseTodos() {
     [todos, fetchTodos]
   );
 
+  // Toggle todo completion and auto-complete all subtasks
+  const toggleTodoWithSubtasks = useCallback(
+    async (id: string) => {
+      try {
+        setError(null);
+
+        if (!supabase) return;
+
+        const todo = todos.find((t) => t.id === id);
+        if (!todo) return;
+
+        // If completing the task, mark all subtasks as complete
+        if (!todo.completed && todo.subtasks.length > 0) {
+          const { error: subtasksError } = await supabase
+            .from("subtasks")
+            .update({ completed: true })
+            .eq("todo_id", id);
+
+          if (subtasksError) throw subtasksError;
+        }
+
+        // Toggle the main task
+        const { error: updateError } = await supabase
+          .from("todos")
+          .update({ completed: !todo.completed })
+          .eq("id", id);
+
+        if (updateError) throw updateError;
+
+        await fetchTodos();
+      } catch (err: any) {
+        console.error("Error toggling todo with subtasks:", err);
+        setError(err.message);
+      }
+    },
+    [todos, fetchTodos]
+  );
+
   // Delete todo
   const deleteTodo = useCallback(
     async (id: string) => {
@@ -342,6 +380,7 @@ export function useSupabaseTodos() {
     error,
     addTodo,
     toggleTodo,
+    toggleTodoWithSubtasks,
     deleteTodo,
     editTodo,
     toggleSubtask,
