@@ -32,11 +32,13 @@ A beautiful, modern task management application built with Next.js 14, TypeScrip
 
 ### Technical Features
 
-- 💾 **LocalStorage Persistence** - Your data stays on your device
-- ⚡ **Optimized Performance** - Fast load times with React optimization
+- 💾 **Supabase Database** - Cloud-based PostgreSQL database with real-time sync
+- ⚡ **Real-time Updates** - See changes instantly across all devices
+- 🔔 **Toast Notifications** - Clear feedback for all actions (no loading spinners)
 - 📱 **Responsive Design** - Works perfectly on desktop, tablet, and mobile
 - 🎨 **Modern UI** - Clean, gradient-based design with smooth animations
 - ♿ **Accessible** - Keyboard navigation and semantic HTML
+- 🚀 **React Compiler** - Automatic performance optimization
 
 ## 🚀 Getting Started
 
@@ -60,13 +62,24 @@ cd task-flow
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+
+Create a `.env.local` file in the root directory:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+See `SUPABASE_SETUP.md` for complete database setup instructions.
+
+4. Run the development server:
 
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### Build for Production
 
@@ -101,54 +114,67 @@ task-flow/
 ├── app/
 │   ├── layout.tsx          # Root layout with metadata
 │   ├── page.tsx            # Main page (renders TaskFlow)
-│   └── globals.css         # Global styles and Tailwind
+│   ├── globals.css         # Global styles and Tailwind
+│   ├── favicon.svg         # Custom favicon
+│   └── icon.svg            # App icon
 ├── components/
 │   ├── TaskFlow.tsx        # Main application component
 │   ├── TodoItem.tsx        # Individual task card
 │   ├── TodoForm.tsx        # Add/Edit task form
 │   ├── StatsPanel.tsx      # Statistics sidebar
 │   ├── Confetti.tsx        # Celebration animation
-│   └── ShortcutsModal.tsx  # Keyboard shortcuts help
+│   ├── ShortcutsModal.tsx  # Keyboard shortcuts help
+│   ├── Toast.tsx           # Toast notification component
+│   ├── DeleteConfirmationModal.tsx  # Delete confirmation
+│   └── IncompleteSubtasksModal.tsx  # Subtask warning
 ├── lib/
 │   ├── types.ts            # TypeScript type definitions
 │   ├── constants.ts        # App constants (priorities, categories, quotes)
-│   └── storage.ts          # LocalStorage utilities
+│   └── supabase.ts         # Supabase client configuration
 ├── hooks/
-│   ├── useTodos.ts         # Todo state management
-│   ├── useLocalStorage.ts  # LocalStorage hook
+│   ├── useSupabaseTodos.ts # Supabase CRUD operations with real-time
 │   └── useKeyboardShortcuts.ts  # Keyboard navigation
-└── public/                 # Static assets
+├── public/                 # Static assets
+├── .env.local              # Environment variables (Supabase keys)
+├── SUPABASE_SETUP.md       # Database schema and setup
+└── README.md               # This file
 ```
 
 ## 🎨 Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 14 (App Router) with React Compiler
 - **Language**: TypeScript
 - **Styling**: TailwindCSS
+- **Database**: Supabase (PostgreSQL)
+- **Real-time**: Supabase Realtime subscriptions
 - **State Management**: React Hooks + Custom Hooks
-- **Storage**: LocalStorage (Phase 1)
 - **Deployment**: Vercel
 
-## 🔮 Roadmap
+## 🔮 Current Status
 
-### Phase 1: LocalStorage (Current) ✅
+### ✅ Completed Features
 
-- [x] Next.js 14 setup with TypeScript
-- [x] Component architecture
-- [x] LocalStorage persistence
+- [x] Next.js 14 setup with TypeScript and React Compiler
+- [x] Component architecture with separation of concerns
+- [x] Supabase PostgreSQL database integration
+- [x] Real-time synchronization across devices
+- [x] Toast notifications for all CRUD operations
 - [x] All core features implemented
 - [x] Keyboard shortcuts
 - [x] Dark mode
 - [x] Statistics dashboard
+- [x] Subtask management with warnings
+- [x] Bulk operations
+- [x] Advanced filtering and sorting
 
-### Phase 2: Supabase Integration (Coming Soon)
+### 🚀 Future Enhancements
 
-- [ ] Supabase PostgreSQL database
-- [ ] User authentication
-- [ ] Real-time synchronization
-- [ ] Multi-device support
-- [ ] Shared task lists
-- [ ] Data migration from localStorage
+- [ ] User authentication with Supabase Auth
+- [ ] User-specific data isolation with RLS
+- [ ] Shared task lists and collaboration
+- [ ] Task comments and attachments
+- [ ] Email notifications for due tasks
+- [ ] Mobile app (React Native)
 
 ## 🤝 Contributing
 

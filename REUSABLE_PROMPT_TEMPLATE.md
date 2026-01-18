@@ -6,26 +6,20 @@ I have a [COMPONENT_NAME] file/application in this folder that needs to be refac
 
 ## Requirements
 
-### Phase 1: Next.js Refactoring with Local Storage
+### Implementation Approach: Supabase from Day One
 
 - Refactor the existing code into a **Next.js 14** application with **App Router**
 - Use **TypeScript** for type safety
 - Use **TailwindCSS** for styling
 - Implement proper component architecture with separation of concerns
-- Keep all data persistence in **localStorage** for this phase
-- Preserve all existing features and functionality
-- Create custom hooks for state management and business logic
-- Follow Next.js best practices and modern React patterns
-
-### Phase 2: Supabase Database Migration (Future)
-
-- Migrate from localStorage to **Supabase** PostgreSQL database
+- Use **Supabase** PostgreSQL database for all data persistence from the start
 - Create proper database schema with tables and relationships
-- Implement Row Level Security (RLS) policies
+- Implement Row Level Security (RLS) policies (permissive for development, can be tightened later)
 - Add real-time subscriptions for live updates
-- Create API routes for secure database operations
-- Provide data migration script from localStorage to Supabase
-- (Optional) Add user authentication with Supabase Auth
+- Preserve all existing features and functionality
+- Create custom hooks for Supabase operations and state management
+- Follow Next.js best practices and modern React patterns
+- (Optional) Add user authentication with Supabase Auth when needed
 
 ## Project Structure Requirements
 
@@ -35,25 +29,28 @@ I have a [COMPONENT_NAME] file/application in this folder that needs to be refac
 │   ├── layout.tsx
 │   ├── page.tsx
 │   ├── globals.css
-│   └── api/ (for Phase 2)
+│   ├── favicon.svg
+│   └── icon.svg
 ├── components/
 │   ├── [MainComponent].tsx
 │   ├── [SubComponents].tsx
+│   ├── Toast.tsx
 │   └── ui/
 ├── lib/
 │   ├── constants.ts
-│   ├── storage.ts
 │   ├── types.ts
-│   └── supabase.ts (Phase 2)
+│   └── supabase.ts
 ├── hooks/
 │   ├── use[Feature].ts
-│   └── useLocalStorage.ts
+│   └── useSupabase[Feature].ts
 ├── public/
 ├── package.json
 ├── next.config.js
 ├── tailwind.config.ts
 ├── tsconfig.json
-└── .env.local
+├── .env.local
+├── SUPABASE_SETUP.md
+└── README.md
 ```
 
 ## Deployment Workflow
@@ -98,14 +95,15 @@ git push origin main
 
 ### Core Technologies
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 14 (App Router) with React Compiler enabled
 - **Language**: TypeScript
 - **Styling**: TailwindCSS
-- **State Management**: React Hooks + Context API (if needed)
-- **Storage (Phase 1)**: localStorage
-- **Database (Phase 2)**: Supabase (PostgreSQL)
-- **Authentication (Phase 2)**: Supabase Auth (optional)
+- **State Management**: React Hooks + Custom Hooks
+- **Database**: Supabase (PostgreSQL)
+- **Real-time**: Supabase Realtime subscriptions
+- **Authentication**: Supabase Auth (optional, when needed)
 - **Deployment**: Vercel (via GitHub integration)
+- **UI Feedback**: Toast notifications for all CRUD operations
 
 ### Development Tools
 
@@ -125,22 +123,58 @@ git push origin main
 4. Design the new architecture
 5. Present recommendations (if requested)
 
-### Step 2: Next.js Setup
+### Step 2: Next.js Setup (Automated)
 
-1. Initialize Next.js 14 project with TypeScript
-2. Configure TailwindCSS
+1. Initialize Next.js 14 project with TypeScript using automated command:
+
+   ```bash
+   npx create-next-app@latest [project-name] --typescript --tailwind --app --no-src-dir --import-alias "@/*" --turbopack --use-npm --experimental-react-compiler
+   ```
+
+   This automatically:
+
+   - Enables TypeScript
+   - Configures TailwindCSS
+   - Uses App Router
+   - Enables React Compiler (experimental)
+   - Uses Turbopack for faster builds
+   - Sets up import aliases
+   - Uses npm as package manager
+
+2. Install Supabase client:
+
+   ```bash
+   npm install @supabase/supabase-js
+   ```
+
 3. Set up project structure (folders and files)
-4. Configure necessary dependencies
+4. Configure environment variables in `.env.local`
 
-### Step 3: Component Refactoring
+### Step 3: Supabase Setup
+
+1. Create Supabase project at https://supabase.com
+2. Design and create database schema (tables, relationships, indexes)
+3. Set up Row Level Security (RLS) policies:
+   - Use permissive policies for development (allow all operations)
+   - Can be tightened later when authentication is added
+4. Create `SUPABASE_SETUP.md` with SQL schema and setup instructions
+5. Configure environment variables:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+### Step 4: Component Refactoring
 
 1. Break down monolithic components into smaller, reusable pieces
 2. Create proper TypeScript interfaces and types
-3. Implement custom hooks for business logic
-4. Add localStorage persistence layer
-5. Preserve all existing features
+3. Implement custom hooks for Supabase operations (CRUD + real-time)
+4. Add Supabase client configuration in `lib/supabase.ts`
+5. Implement toast notifications for all CRUD operations
+6. Add real-time subscriptions for live data updates
+7. Preserve all existing features
 
-### Step 4: Testing & Validation
+### Step 5: Testing & Validation
 
 1. Test all features work identically to original
 2. Verify dark mode, keyboard shortcuts, and all interactions
@@ -153,7 +187,7 @@ git push origin main
    - Ensure consistent server/client rendering
    - Check for browser-only APIs (window, localStorage) wrapped in checks
 
-### Step 5: GitHub & Deployment
+### Step 6: GitHub & Deployment
 
 1. Create `.gitignore` with proper exclusions
 2. Initialize git repository
@@ -161,15 +195,23 @@ git push origin main
 4. Push initial commit
 5. Verify build on local machine before pushing
 
-### Step 6: Documentation
+### Step 7: Documentation
 
-1. Update README.md with:
+1. Create/Update README.md with:
+
    - Project description
    - Features list
    - Installation instructions
    - Development commands
    - Deployment instructions
-   - Environment variables (for Phase 2)
+   - Environment variables setup
+   - Supabase setup instructions
+
+2. Create SUPABASE_SETUP.md with:
+   - Complete SQL schema
+   - RLS policies
+   - Setup instructions
+   - Database structure documentation
 
 ## Quality Standards
 
@@ -200,11 +242,12 @@ git push origin main
 
 ### User Experience
 
-- ✅ Loading states
-- ✅ Error states
-- ✅ Empty states
+- ✅ Toast notifications for all CRUD operations (no loading spinners)
+- ✅ Error states with clear messages
+- ✅ Empty states with helpful guidance
 - ✅ Smooth transitions and animations
 - ✅ Responsive design (mobile, tablet, desktop)
+- ✅ Real-time updates without page refresh
 
 ## Important Notes
 
@@ -228,41 +271,44 @@ git push origin main
 - Preview deployments: Pull requests get preview URLs
 - Environment variables: Set in Vercel dashboard (for Phase 2)
 
-### Phase Separation
+### Supabase-First Approach
 
-- **Phase 1**: Complete Next.js refactoring with localStorage (current request)
-- **Phase 2**: Supabase migration (future request)
-- Do not mix phases - complete Phase 1 fully before Phase 2
+- Use Supabase from day one - no localStorage phase
+- Set up database schema before building components
+- Implement real-time subscriptions for live updates
+- Use toast notifications instead of loading spinners for better UX
+- Keep RLS policies permissive during development (can tighten later)
 
 ## Success Criteria
 
-### Phase 1 Completion Checklist
+### Project Completion Checklist
 
-- [ ] Next.js 14 project initialized with TypeScript
+- [ ] Next.js 14 project initialized with TypeScript and React Compiler
 - [ ] TailwindCSS configured and working
+- [ ] Supabase project created and configured
+- [ ] Database schema designed and implemented
+- [ ] Row Level Security policies configured (permissive for development)
 - [ ] All components refactored and properly structured
 - [ ] All original features preserved and working
-- [ ] localStorage persistence implemented
-- [ ] Custom hooks created for state management
+- [ ] Custom hooks created for Supabase operations
+- [ ] Real-time subscriptions implemented
+- [ ] Toast notifications added for all CRUD operations
 - [ ] TypeScript types defined for all data structures
+- [ ] Environment variables configured in `.env.local`
+- [ ] SUPABASE_SETUP.md created with schema and instructions
 - [ ] Production build succeeds with no errors
 - [ ] Application tested and working locally
 - [ ] GitHub repository created (name matches folder)
 - [ ] Code pushed to GitHub
-- [ ] README.md updated with documentation
-
-### Phase 2 Completion Checklist (Future)
-
-- [ ] Supabase project created
-- [ ] Database schema designed and implemented
-- [ ] Row Level Security policies configured
-- [ ] API routes created for CRUD operations
-- [ ] Data migration script provided
-- [ ] Real-time subscriptions implemented
-- [ ] Authentication added (if requested)
-- [ ] Environment variables documented
-- [ ] Production build succeeds
+- [ ] README.md updated with complete documentation
 - [ ] Deployed to Vercel with Supabase integration
+
+### Optional Enhancements (When Needed)
+
+- [ ] Add user authentication with Supabase Auth
+- [ ] Tighten RLS policies for production security
+- [ ] Add user-specific data filtering
+- [ ] Implement advanced features (search, filters, etc.)
 
 ---
 
@@ -271,16 +317,19 @@ git push origin main
 Replace the placeholders with your specific project details:
 
 ```
-I have a [ToDo.jsx] file in this folder that needs to be refactored into a professional Next.js application.
+I have a [ComponentName.jsx] file in this folder that needs to be refactored into a professional Next.js application.
 
 Please follow the standard refactoring workflow:
 1. Analyze the existing code
-2. Refactor to Next.js 14 with TypeScript and TailwindCSS
-3. Keep localStorage for Phase 1
-4. Create proper component structure
-5. Build and test locally
-6. Create GitHub repo named [task-flow] using gh CLI
-7. Push to GitHub
+2. Create Next.js 14 project with TypeScript, TailwindCSS, and React Compiler (automated setup)
+3. Set up Supabase database from the start (no localStorage)
+4. Create database schema and RLS policies
+5. Refactor components with proper structure
+6. Implement Supabase hooks with real-time subscriptions
+7. Add toast notifications for all CRUD operations
+8. Build and test locally
+9. Create GitHub repo named [project-folder-name] using gh CLI
+10. Push to GitHub
 
 The project will be deployed to Vercel (I'll connect it manually after you push).
 ```
@@ -289,7 +338,9 @@ The project will be deployed to Vercel (I'll connect it manually after you push)
 
 ## Template Version
 
-**Version**: 1.0  
+**Version**: 2.0  
 **Last Updated**: January 2026  
-**Default Framework**: Next.js 14 (App Router)  
-**Default Language**: TypeScript
+**Default Framework**: Next.js 14 (App Router) with React Compiler  
+**Default Language**: TypeScript  
+**Default Database**: Supabase (from day one)  
+**Default UX Pattern**: Toast notifications (no loading spinners)
