@@ -12,6 +12,7 @@ import { TodoItem } from "./TodoItem";
 import { TodoForm } from "./TodoForm";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 import { IncompleteSubtasksModal } from "./IncompleteSubtasksModal";
+import { Toast, ToastType } from "./Toast";
 
 export default function TaskFlow() {
   const {
@@ -73,6 +74,22 @@ export default function TaskFlow() {
     incompleteCount: 0,
     totalCount: 0,
   });
+  const [toast, setToast] = useState<{
+    isVisible: boolean;
+    message: string;
+    type: ToastType;
+  }>({ isVisible: false, message: "", type: "success" });
+
+  const showToast = useCallback(
+    (message: string, type: ToastType = "success") => {
+      setToast({ isVisible: true, message, type });
+    },
+    []
+  );
+
+  const hideToast = useCallback(() => {
+    setToast({ isVisible: false, message: "", type: "success" });
+  }, []);
 
   useEffect(() => {
     setQuote(
@@ -103,7 +120,7 @@ export default function TaskFlow() {
   }, []);
 
   const handleToggleTodo = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const todo = todos.find((t) => t.id === id);
       if (!todo) return;
 
@@ -128,12 +145,22 @@ export default function TaskFlow() {
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 100);
       }
-      toggleTodo(id);
+
+      const result = await toggleTodo(id);
+      if (result?.success) {
+        showToast(
+          todo.completed
+            ? "Task marked as incomplete"
+            : "Task completed successfully!"
+        );
+      } else if (result?.error) {
+        showToast(result.error, "error");
+      }
     },
-    [todos, toggleTodo]
+    [todos, toggleTodo, showToast]
   );
 
-  const handleConfirmCompleteWithSubtasks = useCallback(() => {
+  const handleConfirmCompleteWithSubtasks = useCallback(async () => {
     const { todoId } = incompleteSubtasksWarning;
     setIncompleteSubtasksWarning({
       isOpen: false,
@@ -145,8 +172,14 @@ export default function TaskFlow() {
 
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 100);
-    toggleTodoWithSubtasks(todoId);
-  }, [incompleteSubtasksWarning, toggleTodoWithSubtasks]);
+
+    const result = await toggleTodoWithSubtasks(todoId);
+    if (result?.success) {
+      showToast("Task and all subtasks completed!");
+    } else if (result?.error) {
+      showToast(result.error, "error");
+    }
+  }, [incompleteSubtasksWarning, toggleTodoWithSubtasks, showToast]);
 
   const handleCancelCompleteWithSubtasks = useCallback(() => {
     setIncompleteSubtasksWarning({
@@ -172,15 +205,33 @@ export default function TaskFlow() {
     [todos]
   );
 
-  const confirmDelete = useCallback(() => {
-    deleteTodo(deleteConfirmation.todoId);
+  const handleToggleSubtask = useCallback(
+    async (todoId: string, subtaskId: string) => {
+      const result = await toggleSubtask(todoId, subtaskId);
+      if (result?.success) {
+        showToast("Subtask updated successfully!");
+      } else if (result?.error) {
+        showToast(result.error, "error");
+      }
+    },
+    [toggleSubtask, showToast]
+  );
+
+  const confirmDelete = useCallback(async () => {
+    const result = await deleteTodo(deleteConfirmation.todoId);
     setSelectedTodos((prev) => {
       const next = new Set(prev);
       next.delete(deleteConfirmation.todoId);
       return next;
     });
     setDeleteConfirmation({ isOpen: false, todoId: "", todoTitle: "" });
-  }, [deleteConfirmation.todoId, deleteTodo]);
+
+    if (result?.success) {
+      showToast("Task deleted successfully!");
+    } else if (result?.error) {
+      showToast(result.error, "error");
+    }
+  }, [deleteConfirmation.todoId, deleteTodo, showToast]);
 
   const cancelDelete = useCallback(() => {
     setDeleteConfirmation({ isOpen: false, todoId: "", todoTitle: "" });
@@ -195,19 +246,31 @@ export default function TaskFlow() {
     });
   }, []);
 
-  const handleBulkComplete = useCallback(() => {
+  const handleBulkComplete = useCallback(async () => {
     if (selectedTodos.size === 0) return;
-    bulkComplete(selectedTodos);
+    const result = await bulkComplete(selectedTodos);
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 100);
     setSelectedTodos(new Set());
-  }, [selectedTodos, bulkComplete]);
 
-  const handleBulkDelete = useCallback(() => {
+    if (result?.success) {
+      showToast(`${selectedTodos.size} tasks completed!`);
+    } else if (result?.error) {
+      showToast(result.error, "error");
+    }
+  }, [selectedTodos, bulkComplete, showToast]);
+
+  const handleBulkDelete = useCallback(async () => {
     if (selectedTodos.size === 0) return;
-    bulkDelete(selectedTodos);
+    const result = await bulkDelete(selectedTodos);
     setSelectedTodos(new Set());
-  }, [selectedTodos, bulkDelete]);
+
+    if (result?.success) {
+      showToast(`${selectedTodos.size} tasks deleted!`);
+    } else if (result?.error) {
+      showToast(result.error, "error");
+    }
+  }, [selectedTodos, bulkDelete, showToast]);
 
   useKeyboardShortcuts({
     onNew: () => {
@@ -327,8 +390,24 @@ export default function TaskFlow() {
               {editingTodo ? "✏️ Edit Task" : "✨ New Task"}
             </h3>
             <TodoForm
-              onAdd={addTodo}
-              onEdit={editTodo}
+              onAdd={async (todo) => {
+                const result = await addTodo(todo);
+                if (result?.success) {
+                  showToast("Task created successfully!");
+                  closeModal();
+                } else if (result?.error) {
+                  showToast(result.error, "error");
+                }
+              }}
+              onEdit={async (id, updates) => {
+                const result = await editTodo(id, updates);
+                if (result?.success) {
+                  showToast("Task updated successfully!");
+                  closeModal();
+                } else if (result?.error) {
+                  showToast(result.error, "error");
+                }
+              }}
               onClose={closeModal}
               darkMode={darkMode}
               editingTodo={editingTodo}
@@ -644,7 +723,7 @@ export default function TaskFlow() {
                     todo={todo}
                     onToggle={handleToggleTodo}
                     onDelete={handleDeleteTodo}
-                    onToggleSubtask={toggleSubtask}
+                    onToggleSubtask={handleToggleSubtask}
                     darkMode={darkMode}
                     isSelected={selectedTodos.has(todo.id)}
                     onSelect={toggleSelect}
@@ -688,6 +767,14 @@ export default function TaskFlow() {
         totalCount={incompleteSubtasksWarning.totalCount}
         onConfirm={handleConfirmCompleteWithSubtasks}
         onCancel={handleCancelCompleteWithSubtasks}
+        darkMode={darkMode}
+      />
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
         darkMode={darkMode}
       />
     </div>

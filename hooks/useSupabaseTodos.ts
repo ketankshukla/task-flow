@@ -10,9 +10,11 @@ export function useSupabaseTodos() {
   const [error, setError] = useState<string | null>(null);
 
   // Fetch all todos with subtasks
-  const fetchTodos = useCallback(async () => {
+  const fetchTodos = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       setError(null);
 
       if (!supabase) {
@@ -32,7 +34,9 @@ export function useSupabaseTodos() {
 
       if (!todosData || todosData.length === 0) {
         setTodos([]);
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -68,7 +72,9 @@ export function useSupabaseTodos() {
       console.error("Error fetching todos:", err);
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -114,10 +120,12 @@ export function useSupabaseTodos() {
           if (subtasksError) throw subtasksError;
         }
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error adding todo:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [fetchTodos]
@@ -141,10 +149,12 @@ export function useSupabaseTodos() {
 
         if (updateError) throw updateError;
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error toggling todo:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [todos, fetchTodos]
@@ -179,10 +189,12 @@ export function useSupabaseTodos() {
 
         if (updateError) throw updateError;
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error toggling todo with subtasks:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [todos, fetchTodos]
@@ -203,10 +215,12 @@ export function useSupabaseTodos() {
 
         if (deleteError) throw deleteError;
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error deleting todo:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [fetchTodos]
@@ -253,10 +267,12 @@ export function useSupabaseTodos() {
           }
         }
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error editing todo:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [fetchTodos]
@@ -283,10 +299,12 @@ export function useSupabaseTodos() {
 
         if (updateError) throw updateError;
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error toggling subtask:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [todos, fetchTodos]
@@ -307,10 +325,12 @@ export function useSupabaseTodos() {
 
         if (updateError) throw updateError;
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error bulk completing:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [fetchTodos]
@@ -331,10 +351,12 @@ export function useSupabaseTodos() {
 
         if (deleteError) throw deleteError;
 
-        await fetchTodos();
+        await fetchTodos(true);
+        return { success: true };
       } catch (err: any) {
         console.error("Error bulk deleting:", err);
         setError(err.message);
+        return { success: false, error: err.message };
       }
     },
     [fetchTodos]
