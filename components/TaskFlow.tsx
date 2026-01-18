@@ -680,19 +680,7 @@ export default function TaskFlow() {
             )}
 
             <div className="space-y-3">
-              {loading ? (
-                <div
-                  className={`${
-                    darkMode ? "bg-gray-800/50" : "bg-white/50"
-                  } backdrop-blur-sm rounded-2xl p-12 text-center`}
-                >
-                  <div className="text-6xl mb-4 animate-pulse">⏳</div>
-                  <h3 className="text-xl font-medium mb-2">Loading tasks...</h3>
-                  <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
-                    Fetching your tasks from the cloud
-                  </p>
-                </div>
-              ) : filteredTodos.length === 0 ? (
+              {filteredTodos.length === 0 ? (
                 <div
                   className={`${
                     darkMode ? "bg-gray-800/50" : "bg-white/50"
