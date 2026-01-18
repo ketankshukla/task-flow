@@ -147,6 +147,11 @@ git push origin main
 3. Check responsive design
 4. Run production build locally
 5. Fix any build errors or warnings
+6. **Fix hydration errors** - Ensure no SSR/client mismatches:
+   - Avoid `Math.random()` or `Date.now()` during initial render
+   - Use `useEffect` for client-only random values
+   - Ensure consistent server/client rendering
+   - Check for browser-only APIs (window, localStorage) wrapped in checks
 
 ### Step 5: GitHub & Deployment
 

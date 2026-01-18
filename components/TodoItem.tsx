@@ -2,6 +2,7 @@
 
 import { Todo } from "@/lib/types";
 import { PRIORITIES, CATEGORIES } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 
 interface TodoItemProps {
   todo: Todo;
@@ -109,7 +110,11 @@ export function TodoItem({
                 `}
                 >
                   📅{" "}
-                  {isOverdue ? "Overdue" : isDueToday ? "Today" : todo.dueDate}
+                  {isOverdue
+                    ? "Overdue"
+                    : isDueToday
+                    ? "Today"
+                    : formatDate(todo.dueDate)}
                 </span>
               )}
               {subtaskProgress !== null && (
@@ -140,15 +145,24 @@ export function TodoItem({
                 {todo.subtasks.map((sub) => (
                   <div key={sub.id} className="flex items-center gap-2">
                     <button
-                      onClick={() => onToggleSubtask(todo.id, sub.id)}
-                      className={`w-4 h-4 rounded border flex items-center justify-center text-xs
+                      onClick={() =>
+                        !todo.completed && onToggleSubtask(todo.id, sub.id)
+                      }
+                      disabled={todo.completed}
+                      className={`w-4 h-4 rounded border flex items-center justify-center text-xs transition-all
                         ${
                           sub.completed
                             ? "bg-emerald-500 border-emerald-500 text-white"
                             : darkMode
                             ? "border-gray-500"
                             : "border-gray-300"
-                        }`}
+                        }
+                        ${
+                          todo.completed
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer hover:border-purple-400"
+                        }
+                      `}
                     >
                       {sub.completed && "✓"}
                     </button>

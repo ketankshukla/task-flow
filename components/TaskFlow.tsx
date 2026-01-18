@@ -11,6 +11,7 @@ import { ShortcutsModal } from "./ShortcutsModal";
 import { StatsPanel } from "./StatsPanel";
 import { TodoItem } from "./TodoItem";
 import { TodoForm } from "./TodoForm";
+import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 
 export default function TaskFlow() {
   const {
@@ -38,6 +39,11 @@ export default function TaskFlow() {
   const [focusMode, setFocusMode] = useState(false);
   const [quote, setQuote] = useState(MOTIVATIONAL_QUOTES[0]);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    todoId: string;
+    todoTitle: string;
+  }>({ isOpen: false, todoId: "", todoTitle: "" });
 
   useEffect(() => {
     setQuote(
@@ -81,15 +87,31 @@ export default function TaskFlow() {
 
   const handleDeleteTodo = useCallback(
     (id: string) => {
-      deleteTodo(id);
-      setSelectedTodos((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      const todo = todos.find((t) => t.id === id);
+      if (todo) {
+        setDeleteConfirmation({
+          isOpen: true,
+          todoId: id,
+          todoTitle: todo.title,
+        });
+      }
     },
-    [deleteTodo]
+    [todos]
   );
+
+  const confirmDelete = useCallback(() => {
+    deleteTodo(deleteConfirmation.todoId);
+    setSelectedTodos((prev) => {
+      const next = new Set(prev);
+      next.delete(deleteConfirmation.todoId);
+      return next;
+    });
+    setDeleteConfirmation({ isOpen: false, todoId: "", todoTitle: "" });
+  }, [deleteConfirmation.todoId, deleteTodo]);
+
+  const cancelDelete = useCallback(() => {
+    setDeleteConfirmation({ isOpen: false, todoId: "", todoTitle: "" });
+  }, []);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedTodos((prev) => {
@@ -246,6 +268,13 @@ export default function TaskFlow() {
         isOpen={showShortcuts}
         onClose={() => setShowShortcuts(false)}
         darkMode={darkMode}
+      />
+      <DeleteConfirmationModal
+        isOpen={deleteConfirmation.isOpen}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        darkMode={darkMode}
+        taskTitle={deleteConfirmation.todoTitle}
       />
 
       <div className="max-w-6xl mx-auto p-6">

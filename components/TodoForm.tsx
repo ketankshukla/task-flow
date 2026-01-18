@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Todo, Priority, Category } from "@/lib/types";
 import { PRIORITIES, CATEGORIES } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 
 interface TodoFormProps {
   onAdd: (todo: Todo) => void;
@@ -34,6 +35,7 @@ export function TodoForm({
     editingTodo?.subtasks?.map((s) => s.title) || []
   );
   const [newSubtask, setNewSubtask] = useState("");
+  const [titleError, setTitleError] = useState("");
 
   const titleRef = useRef<HTMLInputElement>(null);
   const subtaskRef = useRef<HTMLInputElement>(null);
@@ -41,7 +43,12 @@ export function TodoForm({
   const priorityKeys = Object.keys(PRIORITIES) as Priority[];
 
   const handleSubmit = () => {
-    if (!title.trim()) return;
+    if (!title.trim()) {
+      setTitleError("Task title is required");
+      titleRef.current?.focus();
+      return;
+    }
+    setTitleError("");
 
     const todoData = {
       title: title.trim(),
@@ -180,16 +187,30 @@ export function TodoForm({
           ref={titleRef}
           type="text"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (titleError) setTitleError("");
+          }}
           placeholder="What needs to be done?"
-          className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:border-purple-500 transition-colors
+          className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors
+            ${
+              titleError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-purple-500 " +
+                  (darkMode ? "border-gray-600" : "border-gray-200")
+            }
             ${
               darkMode
-                ? "bg-gray-700 border-gray-600 placeholder-gray-400"
-                : "bg-white border-gray-200 placeholder-gray-400"
+                ? "bg-gray-700 placeholder-gray-400"
+                : "bg-white placeholder-gray-400"
             }
           `}
         />
+        {titleError && (
+          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <span>⚠️</span> {titleError}
+          </p>
+        )}
       </div>
 
       <div>
@@ -272,7 +293,18 @@ export function TodoForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Due Date</label>
+        <label className="block text-sm font-medium mb-1">
+          Due Date
+          {dueDate && (
+            <span
+              className={`ml-2 text-xs ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              ({formatDate(dueDate)})
+            </span>
+          )}
+        </label>
         <input
           type="date"
           value={dueDate}
@@ -368,7 +400,15 @@ export function TodoForm({
         <button
           type="button"
           onClick={handleSubmit}
-          className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+          disabled={!title.trim()}
+          className={`flex-1 px-4 py-3 rounded-xl font-medium transition-opacity
+            ${
+              !title.trim()
+                ? "bg-gray-400 cursor-not-allowed opacity-50"
+                : "bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
+            }
+            text-white
+          `}
         >
           {isEditing ? "Save Changes" : "Add Task"} ✨{" "}
           <span className="text-xs opacity-75">(Ctrl+↵)</span>
